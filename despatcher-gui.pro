@@ -19,4 +19,4 @@ HEADERS  += despatcher_gui.h
 
 FORMS    += despatcher_gui.ui
 
-unix:!macx: LIBS += -lpeiskernel_mt
+unix:!macx: LIBS += -lpeiskernel -lpeiskernel_mt
