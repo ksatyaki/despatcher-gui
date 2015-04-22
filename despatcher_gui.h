@@ -2,6 +2,14 @@
 #define DESPATCHER_GUI_H
 
 #include <QMainWindow>
+#include <algorithm>
+#include <string.h>
+#include <unistd.h>
+
+extern "C"
+{
+#include <peiskernel/peiskernel_mt.h>
+}
 
 namespace Ui {
 class DespatcherGUI;
@@ -16,7 +24,10 @@ public:
     ~DespatcherGUI();
 
 private:
+	
     Ui::DespatcherGUI *ui;
+
+    static void callbackFunction(PeisTuple* tuple, void* user_data);
 };
 
 #endif // DESPATCHER_GUI_H

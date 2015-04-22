@@ -18,3 +18,5 @@ SOURCES += main.cpp\
 HEADERS  += despatcher_gui.h
 
 FORMS    += despatcher_gui.ui
+
+unix:!macx: LIBS += -lpeiskernel_mt
