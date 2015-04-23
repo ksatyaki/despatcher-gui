@@ -12,3 +12,5 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(despatcher-gui main.cpp despatcher_gui.cpp ${MOCSrcs} ${UISrcs})
 target_link_libraries(despatcher-gui ${QT_LIBRARIES} peiskernel peiskernel_mt)
+
+install(TARGETS despatcher-gui DESTINATION "bin")
