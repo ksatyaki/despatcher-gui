@@ -11,7 +11,7 @@ DespatcherGUI::DespatcherGUI(QWidget *parent) :
     char* args[] = { "despatcher-gui" };
     peiskmt_initialize(&argn, args);
 
-	peiskmt_subscribe(999, "out.doro.pickup.state");
+    peiskmt_subscribe(999, "out.doro.pickup.state");
 	peiskmt_subscribe(999, "out.doro.acquire.state");
 	peiskmt_subscribe(999, "out.doro.moveto.state");
 	peiskmt_subscribe(999, "out.doro.look.state");
@@ -19,19 +19,10 @@ DespatcherGUI::DespatcherGUI(QWidget *parent) :
 	peiskmt_subscribe(999, "out.doro.handover.state");
     peiskmt_subscribe(999, "out.doro.acquire.result");
 
-    peiskmt_registerTupleCallback(999, "out.doro.pickup.state", this, &DespatcherGUI::pickUpStateCallback);
-    peiskmt_registerTupleCallback(999, "out.doro.moveto.state", this, &DespatcherGUI::moveToStateCallback);
-    peiskmt_registerTupleCallback(999, "out.doro.acquire.state", this, &DespatcherGUI::acquireStateCallback);
-    peiskmt_registerTupleCallback(999, "out.doro.dock.state", this, &DespatcherGUI::dockStateCallback);
-    peiskmt_registerTupleCallback(999, "out.doro.look.state", this, &DespatcherGUI::lookStateCallback);
-    peiskmt_registerTupleCallback(999, "out.doro.handover.state", this, &DespatcherGUI::handoverStateCallback);
-
     peiskmt_registerTupleCallback(999, "out.doro.acquire.result", this, &DespatcherGUI::resultCallback);
-
 
     // Connections
     connect(ui->QuitPushButton, SIGNAL(clicked()), this, SLOT(close()));
-
     connect(ui->AcquireButton, SIGNAL(clicked()), this, SLOT(postAcquire()));
     connect(ui->DockButton, SIGNAL(clicked()), this, SLOT(postDock()));
     connect(ui->LookButton, SIGNAL(clicked()), this, SLOT(postLook()));
@@ -39,35 +30,47 @@ DespatcherGUI::DespatcherGUI(QWidget *parent) :
     connect(ui->HandoverButton, SIGNAL(clicked()), this, SLOT(postHandover()));
     connect(ui->MoveToButton, SIGNAL(clicked()), this, SLOT(postMoveTo()));
 
+    despatchedState["moveto"] = false; peiskmt_registerTupleCallback(999, "out.doro.moveto.state", this, &DespatcherGUI::moveToStateCallback);
+    despatchedState["pickup"] = false; peiskmt_registerTupleCallback(999, "out.doro.pickup.state", this, &DespatcherGUI::pickUpStateCallback);
+    despatchedState["acquire"] = false; peiskmt_registerTupleCallback(999, "out.doro.acquire.state", this, &DespatcherGUI::acquireStateCallback);
+    despatchedState["look"] = false; peiskmt_registerTupleCallback(999, "out.doro.look.state", this, &DespatcherGUI::lookStateCallback);
+    despatchedState["dock"] = false; peiskmt_registerTupleCallback(999, "out.doro.dock.state", this, &DespatcherGUI::dockStateCallback);
+    despatchedState["handover"] = false; peiskmt_registerTupleCallback(999, "out.doro.handover.state", this, &DespatcherGUI::handoverStateCallback);
 }
 
 void DespatcherGUI::postMoveTo()
 {
+    despatchedState["moveto"] = true;
     postAction("moveto", ui->MoveToLineEdit->text().toStdString());
 }
 
 void DespatcherGUI::postAcquire()
 {
+    despatchedState["acquire"] = true;
     postAction("acquire", ui->AcquireLineEdit->text().toStdString());
 }
 
 void DespatcherGUI::postPickUp()
 {
+    despatchedState["pickup"] = true;
     postAction("pickup", ui->PickUpLineEdit->text().toStdString());
 }
 
 void DespatcherGUI::postHandover()
 {
+    despatchedState["handover"] = true;
     postAction("handover", ui->HandoverLineEdit->text().toStdString());
 }
 
 void DespatcherGUI::postDock()
 {
+    despatchedState["dock"] = true;
     postAction("dock", ui->DockLineEdit->text().toStdString());
 }
 
 void DespatcherGUI::postLook()
 {
+    despatchedState["look"] = true;
     postAction("look", ui->LookLineEdit->text().toStdString());
 }
 
@@ -152,17 +155,22 @@ void DespatcherGUI::acquireStateCallback(PeisTuple* tuple, void* _this_)
 void DespatcherGUI::genericStateCheck(std::string tuple_data, std::string action_name, QLabel* label_to_change)
 {
 
-    if(tuple_data.compare("COMPLETED") == 0)
+    if(despatchedState[action_name] == true)
     {
-        peisk_setMetaTuple(999, std::string("in.doro." + action_name + ".command").c_str(), -1, "NULL");
-        peisk_setMetaTuple(999, std::string("in.doro." + action_name + ".parameters").c_str(), -1, "NULL");
-        peisk_setRemoteStringTuple(999, std::string("out.doro." + action_name + ".state").c_str(), "IDLE");
-    }
-    else if(tuple_data.compare("FAILED") == 0)
-    {
-        peisk_setMetaTuple(999, std::string("in.doro." + action_name + ".command").c_str(), -1, "NULL");
-        peisk_setMetaTuple(999, std::string("in.doro." + action_name + ".parameters").c_str(), -1, "NULL");
-        peisk_setRemoteStringTuple(999, std::string("out.doro." + action_name + ".state").c_str(), "IDLE");
+        if(tuple_data.compare("COMPLETED") == 0)
+        {
+            peisk_setMetaTuple(999, std::string("in.doro." + action_name + ".command").c_str(), -1, "NULL");
+            peisk_setMetaTuple(999, std::string("in.doro." + action_name + ".parameters").c_str(), -1, "NULL");
+            peisk_setRemoteStringTuple(999, std::string("out.doro." + action_name + ".state").c_str(), "IDLE");
+            despatchedState[action_name] = false;
+        }
+        else if(tuple_data.compare("FAILED") == 0)
+        {
+            peisk_setMetaTuple(999, std::string("in.doro." + action_name + ".command").c_str(), -1, "NULL");
+            peisk_setMetaTuple(999, std::string("in.doro." + action_name + ".parameters").c_str(), -1, "NULL");
+            peisk_setRemoteStringTuple(999, std::string("out.doro." + action_name + ".state").c_str(), "IDLE");   
+            despatchedState[action_name] = false;
+        }
     }
 }
 

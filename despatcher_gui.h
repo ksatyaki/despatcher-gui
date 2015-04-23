@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <map>
 #include <algorithm>
 #include <string.h>
 #include <unistd.h>
@@ -34,7 +35,9 @@ protected slots:
     void postPickUp();
 
 private:
-	
+    std::map<std::string, PeisCallbackHandle> callbackHandlesMap;
+    std::map<std::string, bool> despatchedState;
+
     Ui::DespatcherGUI *ui;
 
     void genericStateCheck(std::string tuple_data, std::string action_name, QLabel* label_to_change);
