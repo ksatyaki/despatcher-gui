@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Name=DespatcherGUI
+Comment=Runs the despatcher GUI
+Exec=despatcher-gui
+Icon=/usr/share/pixmaps/despatcher-gui.xpm
+Type=Application
+Categories=Utility;
