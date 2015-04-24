@@ -1,1 +1,1 @@
-![Screenshot](DespatcherGUI.png)
+![Screenshot](DespatcherGUI.jpg)
